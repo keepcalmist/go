@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+//name - name of the table
+//table - map of Name - extension
 func WriteTable(name string, table map[string]string) {
 	var flag bool = true
 	file, err := os.OpenFile("tables.go", os.O_CREATE, 0777)
