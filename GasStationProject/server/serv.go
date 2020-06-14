@@ -54,8 +54,17 @@ func (gs *GasStation) ChangePort(port string) {
 	gs.port = port
 }
 
-//TODO Сделать норм вывод колонок(в виде | 1 | 2 |)
 func (gs *GasStation) PrintColumns() {
+	fmt.Printf("       |")
+	for _, i := range gs.gasColumnList {
+		fmt.Printf("%-3d|", i)
+	}
+
+	fmt.Printf("\nQueue: |")
+	for _, i := range gs.gasColumnList {
+		fmt.Printf("%-3d|", len(gs.queueForEachColumn[*i]))
+	}
+
 	fmt.Println(gs.gasColumnList)
 }
 
