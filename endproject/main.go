@@ -1,49 +1,52 @@
-
 package main
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/eiannone/keyboard"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/eiannone/keyboard"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type User struct {
-	User string
+	User    string
 	Address string
-	Brand string
-	ID int
-	GosNum int
+	Brand   string
+	ID      int
+	GosNum  int
 }
-
 
 type Character struct {
-	YearV string
+	YearV     string
 	Developer string
-	UserW string
-	GosNum int
+	UserW     string
+	GosNum    int
 }
 
-
 type Malfunction struct {
-	ID int
+	ID      int
 	Malfunc string
-	TimeC string
-	GosNum int
+	TimeC   string
+	GosNum  int
 }
 
 var database *sql.DB
 
 func main() {
 	var choise_1 int
-	pass:= 12345
+	pass := 12345
 	var pass_check int
 
-
 	db, err := sql.Open("mysql", "root:12345@/db15")
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(10)
+	if err = db.Ping(); err != nil {
+		log.Println(err)
+	}
+
 	database = db
 	if err != nil {
 		log.Println(err)
@@ -59,10 +62,10 @@ func main() {
 		case 1:
 			{
 				for {
-					_,_, err := keyboard.GetSingleKey()
-						if err != nil {
-							log.Println(err)
-						}
+					_, _, err := keyboard.GetSingleKey()
+					if err != nil {
+						log.Println(err)
+					}
 
 					cmd := exec.Command("cmd", "/c", "cls")
 					cmd.Stdout = os.Stdout
@@ -79,7 +82,7 @@ func main() {
 		case 2:
 			{
 				for {
-					_,_, err := keyboard.GetSingleKey()
+					_, _, err := keyboard.GetSingleKey()
 					if err != nil {
 						log.Println(err)
 					}
@@ -102,7 +105,7 @@ func choiseVars() int {
 	var choise int
 
 	fmt.Println("What do u want?")
-//	fmt.Println("1 - View all of database")
+	//	fmt.Println("1 - View all of database")
 	fmt.Println("1 - Name of car's owner")
 	fmt.Println("2 - Add a new User")
 	fmt.Println("3 - Info about Car")
@@ -128,7 +131,6 @@ func choiseVars() int {
 		{
 			return 0
 		}
-
 
 	case 1:
 		{
@@ -196,7 +198,6 @@ func choiseVars() int {
 			return 1
 		}
 
-
 	}
 	return 1
 }
@@ -219,38 +220,46 @@ func choiseVars_user() int {
 		return 1
 	}
 	switch choise {
-	case 1:{
-		requestGosNum()
-		return 1
-	}
-	case 2:{
-		infoAboutCar()
-		return 1
-	}
-	case 3:{
-		searchWorker()
-		return 1
-	}
-	case 4:{
-		findMalf()
-		return 1
-	}
-	case 5:{
-		findMalfAuto()
-		return 1
-	}
-	case 6:{
-		viewMalfFromGosNum()
-		return 1
-	}
-	case 7:{
-		getWorkerName()
-		return 1
-	}
-	default:{
-		fmt.Println("Please write a correct number")
-		return 1
-	}
+	case 1:
+		{
+			requestGosNum()
+			return 1
+		}
+	case 2:
+		{
+			infoAboutCar()
+			return 1
+		}
+	case 3:
+		{
+			searchWorker()
+			return 1
+		}
+	case 4:
+		{
+			findMalf()
+			return 1
+		}
+	case 5:
+		{
+			findMalfAuto()
+			return 1
+		}
+	case 6:
+		{
+			viewMalfFromGosNum()
+			return 1
+		}
+	case 7:
+		{
+			getWorkerName()
+			return 1
+		}
+	default:
+		{
+			fmt.Println("Please write a correct number")
+			return 1
+		}
 
 	}
 }
@@ -270,7 +279,7 @@ func requestGosNum() {
 	for rows.Next() {
 		checkResult = true
 		u := User{}
-		err := rows.Scan(&u.ID,&u.User, &u.Address, &u.Brand, &u.GosNum)
+		err := rows.Scan(&u.ID, &u.User, &u.Address, &u.Brand, &u.GosNum)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -303,7 +312,7 @@ func addNewUser() {
 		log.Fatal(err)
 	}
 
-	_, err  = fmt.Fscan(os.Stdin, &newUser.Brand)
+	_, err = fmt.Fscan(os.Stdin, &newUser.Brand)
 
 	if err != nil {
 		log.Fatal(err)
@@ -315,7 +324,7 @@ func addNewUser() {
 		log.Fatal(err)
 	}
 
-	result, err := database.Exec("INSERT  into User (User, Address, Brand, Gosnum) VALUES (?,?,?,?)",newUser.User,newUser.Address,newUser.Brand,newUser.GosNum)
+	result, err := database.Exec("INSERT  into User (User, Address, Brand, Gosnum) VALUES (?,?,?,?)", newUser.User, newUser.Address, newUser.Brand, newUser.GosNum)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -348,7 +357,7 @@ func addMalf() {
 
 	fmt.Println("Did u eliminate the malfunction?\n1-Y\n2-N\n")
 
-	_, err = fmt.Fscan(os.Stdin,&choise)
+	_, err = fmt.Fscan(os.Stdin, &choise)
 
 	if err != nil {
 		log.Fatal(err)
@@ -357,11 +366,11 @@ func addMalf() {
 	case 1:
 		{
 			fmt.Println("Write time of eliminating the malfunction:")
-			_, err = fmt.Fscan(os.Stdin,&Malf.TimeC)
+			_, err = fmt.Fscan(os.Stdin, &Malf.TimeC)
 			if err != nil {
 				log.Fatal(err)
 			}
-			_, err := database.Exec("INSERT  into Malfunction (GosNum, Malfunc, TimeC) VALUES (?,?,?)",Malf.GosNum,Malf.Malfunc,Malf.TimeC)
+			_, err := database.Exec("INSERT  into Malfunction (GosNum, Malfunc, TimeC) VALUES (?,?,?)", Malf.GosNum, Malf.Malfunc, Malf.TimeC)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -369,7 +378,7 @@ func addMalf() {
 		}
 	case 2:
 		{
-			_, err := database.Exec("INSERT  into Malfunction (GosNum, Malfunc) VALUES (?,?)",Malf.GosNum,Malf.Malfunc)
+			_, err := database.Exec("INSERT  into Malfunction (GosNum, Malfunc) VALUES (?,?)", Malf.GosNum, Malf.Malfunc)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -391,7 +400,7 @@ func viewAll() {
 		u := User{}
 		m := Malfunction{}
 		c := Character{}
-		err := rows.Scan(&u.ID,&u.User, &u.Address, &u.Brand, &u.GosNum, &c.YearV, &c.UserW, &m.Malfunc, &m.TimeC)
+		err := rows.Scan(&u.ID, &u.User, &u.Address, &u.Brand, &u.GosNum, &c.YearV, &c.UserW, &m.Malfunc, &m.TimeC)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -407,13 +416,13 @@ func viewAll() {
 	}
 }
 
-type infoAbout struct{
-	Brand string
+type infoAbout struct {
+	Brand     string
 	Developer string
-	YearV string
+	YearV     string
 }
 
-func infoAboutCar()  {
+func infoAboutCar() {
 	var username string
 	fmt.Println("Write Name of car's onwer:")
 	fmt.Fscan(os.Stdin, &username)
@@ -425,7 +434,7 @@ func infoAboutCar()  {
 	defer rows.Close()
 	for rows.Next() {
 		i := infoAbout{}
-		err = rows.Scan(&i.Brand,&i.Developer,&i.YearV)
+		err = rows.Scan(&i.Brand, &i.Developer, &i.YearV)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -471,14 +480,13 @@ func nameAddress() {
 	}
 }
 
-
 func searchWorker() {
 	checkResult := false
 	fmt.Println("Write Worker's name:")
 	var name string
 
-	_, err :=fmt.Fscan(os.Stdin, &name)
-	if err != nil{
+	_, err := fmt.Fscan(os.Stdin, &name)
+	if err != nil {
 		log.Println(err)
 	}
 	rows, err := database.Query("select  Developer, GosNum from charact where UserW =?", name)
@@ -508,12 +516,12 @@ func searchWorker() {
 	}
 }
 
-func findMalf(){
+func findMalf() {
 	checkResult := false
 	fmt.Println("Write car's Gosnumer:")
 	var gos int
-	_, err :=fmt.Fscan(os.Stdin, &gos)
-	if err != nil{
+	_, err := fmt.Fscan(os.Stdin, &gos)
+	if err != nil {
 		log.Println(err)
 	}
 	rows, err := database.Query("select  Malfunc from malfunction where GosNum =?", gos)
@@ -547,11 +555,11 @@ func findMalfAuto() {
 	fmt.Println("Write Malfunction:")
 	var Malf string
 	check := false
-	_, err :=fmt.Fscan(os.Stdin, &Malf)
-	if err != nil{
+	_, err := fmt.Fscan(os.Stdin, &Malf)
+	if err != nil {
 		log.Println(err)
 	}
-	gosArr := make([]int,0)
+	gosArr := make([]int, 0)
 	var gos int
 	rows, err := database.Query("select  GosNum from malfunction where Malfunc =?", Malf)
 	if err != nil {
@@ -601,14 +609,14 @@ func findMalfAuto() {
 
 func updateGosNumber() {
 	fmt.Println("Write GosNumber, which u wanna update:")
-	var gos,changedGos int
-	_, err := fmt.Fscan(os.Stdin,&gos)
+	var gos, changedGos int
+	_, err := fmt.Fscan(os.Stdin, &gos)
 	if err != nil {
 		log.Println(err)
 	}
 
 	fmt.Println("Write GosNumber, which u wanna see in DB")
-	_, err = fmt.Fscan(os.Stdin,&changedGos)
+	_, err = fmt.Fscan(os.Stdin, &changedGos)
 	if err != nil {
 		log.Println(err)
 	}
@@ -631,7 +639,7 @@ func viewMalfFromGosNum() {
 	fmt.Println("Write GosNum which malfunctions u wanna find:")
 	var gos int
 
-	_, err := fmt.Fscan(os.Stdin,&gos)
+	_, err := fmt.Fscan(os.Stdin, &gos)
 	if err != nil {
 		log.Println(err)
 	}
@@ -677,7 +685,7 @@ func getWorkerName() {
 		log.Println(err)
 	}
 	fmt.Println("Write malfunction:")
-	_, err = fmt.Fscan(os.Stdin,&milfa)
+	_, err = fmt.Fscan(os.Stdin, &milfa)
 	if err != nil {
 		log.Println(err)
 	}
@@ -702,23 +710,22 @@ func deleteU() {
 	rows.Next()
 	err = rows.Scan(&gos)
 	result, err := database.Exec("DELETE from  user where GosNum = ?", gos)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	last, _ := result.RowsAffected()
-	fmt.Printf("From Users has been deleted %v rows\n",last)
+	fmt.Printf("From Users has been deleted %v rows\n", last)
 	result, err = database.Exec("DELETE from  charact where GosNum = ?", gos)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	last, _ = result.RowsAffected()
-	fmt.Printf("From Character has been deleted %v rows\n",last)
+	fmt.Printf("From Character has been deleted %v rows\n", last)
 	result, err = database.Exec("DELETE from  malfunction where GosNum = ?", gos)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	last, _ = result.RowsAffected()
-	fmt.Printf("From Character has been deleted %v rows\n",last)
+	fmt.Printf("From Character has been deleted %v rows\n", last)
 
 }
-
