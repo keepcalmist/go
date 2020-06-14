@@ -64,8 +64,6 @@ func (gs *GasStation) PrintColumns() {
 	for _, i := range gs.gasColumnList {
 		fmt.Printf("%-3d|", len(gs.queueForEachColumn[*i]))
 	}
-
-	fmt.Println(gs.gasColumnList)
 }
 
 //AddColumn is func to add new column to gasColumnList in gasStation
