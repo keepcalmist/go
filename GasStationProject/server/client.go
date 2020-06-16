@@ -13,24 +13,42 @@ type ClientQueue struct {
 }
 
 //Next returns Next client in queue
-func (cl ClientQueue) Next() *ClientQueue {
-	return cl.next
+func (clQ ClientQueue) Next() *ClientQueue {
+	return clQ.next
 }
 
 //Prev returns prev client in queue
-func (cl ClientQueue) Prev() *ClientQueue {
-	return cl.prev
+func (clQ ClientQueue) Prev() *ClientQueue {
+	return clQ.prev
 }
 
 //Len returns lenght of client queue
-func (cl *ClientQueue) Len() int {
+func (clQ *ClientQueue) Len() int {
 	var i int
-	for cl.Next != nil {
+	for clQ.cl.time != 0 {
 		i++
+		clQ.Next()
 	}
 	return i
 }
 
-func (cl *ClientQueue) ChangeRefillTime(time int) {
-	cl.cl.time = time
+//SetRefillTime if func to set client's refilling time
+func (clQ *ClientQueue) SetRefillTime(time int) {
+	clQ.cl.time = time
+}
+
+func CreateRootCl() (clQ *ClientQueue) {
+	return &ClientQueue{
+		next: nil,
+		prev: nil,
+		cl:   Client{time: 0},
+	}
+}
+
+func (clQ *ClientQueue) CreateQueue(value int) {
+	for i := 0; i < value; i++ {
+		clQ.next = CreateRootCl()
+		clQ.next.prev = clQ
+		clQ.Next()
+	}
 }

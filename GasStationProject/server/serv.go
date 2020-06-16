@@ -2,22 +2,14 @@ package server
 
 import (
 	"fmt"
-	"time"
 )
 
+//GasStation is main object in the project
 type GasStation struct {
 	ip                 string
 	port               string
 	gasColumnList      []*GasColumn
 	queueForEachColumn map[GasColumn]*ClientQueue
-}
-
-type GasColumn struct {
-	number   int
-	workTime int
-	maxQueue int
-	client   Client
-	enable   bool
 }
 
 func LoadGasStation(ip string, port string) (GS *GasStation) {
@@ -78,15 +70,6 @@ func (gs *GasStation) AddColumn() {
 }
 
 //ChangeAble is func to swap able to other(if gascolumn have true able then it will has false and conversely)
-func (gc *GasColumn) ChangeAble() {
-	if gc.enable == true {
-		gc.enable = false
-	} else if gc.enable == false {
-		gc.enable = true
-	}
-	fmt.Printf("Able has been changed successfully to %b", gc.enable)
-}
-
 func (gs *GasStation) addColumnToQueue(gc GasColumn) {
 	var cl *ClientQueue
 	gs.queueForEachColumn[gc] = cl
@@ -114,28 +97,6 @@ func (gs *GasStation) ChangeGCWT(gc *GasColumn) (err error) {
 	return err
 }
 
-func (gc *GasColumn) refill() error {
-	ticker := time.NewTicker(time.Duration(gc.client.time) * time.Second)
-	done := make(chan bool)
-	go func(n int) {
-		i := 0
-		for {
-			select {
-			case <-done:
-				fmt.Printf("GasColumn number: %d;\nProccesing refilling %%%d ", gc.number, 100)
-				return
-			case <-ticker.C:
-				i++
-				fmt.Printf("GasColumn number: %d;\nProccesing refilling %%%d ", gc.number, i/n)
-			}
-		}
-	}(gc.client.time / 100)
-	time.Sleep((time.Duration(gc.client.time)) * time.Second)
-	ticker.Stop()
-	done <- true
-	return nil
-}
-
 func Start() {
-	lo
+
 }
