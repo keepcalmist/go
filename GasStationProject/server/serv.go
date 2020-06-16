@@ -89,7 +89,7 @@ func (gc *GasColumn) ChangeAble() {
 
 func (gs *GasStation) addColumnToQueue(gc GasColumn) {
 	var cl *ClientQueue
-	gs.queueForEachColumn[gc] = append(gs.queueForEachColumn[gc], cl)
+	gs.queueForEachColumn[gc] = cl
 }
 
 //ChangeMaxQueueColumn is func to change gascolumn max queue

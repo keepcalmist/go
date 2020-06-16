@@ -30,3 +30,7 @@ func (cl *ClientQueue) Len() int {
 	}
 	return i
 }
+
+func (cl *ClientQueue) ChangeRefillTime(time int) {
+	cl.cl.time = time
+}
