@@ -2,28 +2,22 @@ package server
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
-
-type Client struct {
-	//mu   sync.Mutex
-	time int
-}
 
 type GasStation struct {
 	ip                 string
 	port               string
 	gasColumnList      []*GasColumn
-	queueForEachColumn map[GasColumn][]*Client
+	queueForEachColumn map[GasColumn]*ClientQueue
 }
 
 type GasColumn struct {
 	number   int
 	workTime int
 	maxQueue int
-	mu       sync.Mutex
 	client   Client
+	enable   bool
 }
 
 func LoadGasStation(ip string, port string) (GS *GasStation) {
@@ -31,7 +25,7 @@ func LoadGasStation(ip string, port string) (GS *GasStation) {
 		ip:                 ip,
 		port:               port,
 		gasColumnList:      make([]*GasColumn, 1),
-		queueForEachColumn: make(map[GasColumn][]*Client),
+		queueForEachColumn: make(map[GasColumn]*ClientQueue),
 	}
 	return GS
 }
@@ -42,8 +36,13 @@ type SettingsGS interface {
 	ChagePort(string)
 }
 
-func EmptyGS() (GS *GasStation) {
-	return new(GasStation)
+func EmptyGS() *GasStation {
+	return &GasStation{
+		ip:                 "",
+		port:               "",
+		gasColumnList:      make([]*GasColumn, 1),
+		queueForEachColumn: make(map[GasColumn]*ClientQueue),
+	}
 }
 
 func (gs *GasStation) ChangeIP(ip string) {
@@ -62,7 +61,7 @@ func (gs *GasStation) PrintColumns() {
 
 	fmt.Printf("\nQueue: |")
 	for _, i := range gs.gasColumnList {
-		fmt.Printf("%-3d|", len(gs.queueForEachColumn[*i]))
+		fmt.Printf("%-3d|", gs.queueForEachColumn[*i].Len())
 	}
 }
 
@@ -72,37 +71,46 @@ func (gs *GasStation) AddColumn() {
 		number:   len(gs.gasColumnList),
 		workTime: 0,
 		maxQueue: 1,
+		enable:   false,
 	}
 	gs.gasColumnList = append(gs.gasColumnList, newGC)
 	gs.addColumnToQueue(*newGC)
 }
 
+//ChangeAble is func to swap able to other(if gascolumn have true able then it will has false and conversely)
+func (gc *GasColumn) ChangeAble() {
+	if gc.enable == true {
+		gc.enable = false
+	} else if gc.enable == false {
+		gc.enable = true
+	}
+	fmt.Printf("Able has been changed successfully to %b", gc.enable)
+}
+
 func (gs *GasStation) addColumnToQueue(gc GasColumn) {
-	var cl *Client
+	var cl *ClientQueue
 	gs.queueForEachColumn[gc] = append(gs.queueForEachColumn[gc], cl)
 }
 
-//ChangeQueueColumn is func to change gascolumn max queue
+//ChangeMaxQueueColumn is func to change gascolumn max queue
 func (gs *GasStation) ChangeMaxQueueColumn(n int, max int) {
 	gs.gasColumnList[n-1].maxQueue = max
 }
 
 func (gs GasStation) countLenQueue(gc GasColumn) int {
-	return len(gs.queueForEachColumn[gc])
+	return gs.queueForEachColumn[gc].Len()
 }
 
 func (gs GasStation) countWT(num GasColumn) (sum int, err error) {
 	queue := gs.queueForEachColumn[num]
-	for _, i := range queue {
-		sum += i.time
+	for queue.Next() != nil {
+		sum += queue.cl.time
 	}
 	return sum, nil
 }
 
 func (gs *GasStation) ChangeGCWT(gc *GasColumn) (err error) {
-	gc.mu.Lock()
 	gc.workTime, err = gs.countWT(*gc)
-	gc.mu.Unlock()
 	return err
 }
 
@@ -126,4 +134,8 @@ func (gc *GasColumn) refill() error {
 	ticker.Stop()
 	done <- true
 	return nil
+}
+
+func Start() {
+	lo
 }
