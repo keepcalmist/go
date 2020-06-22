@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,12 +16,12 @@ import (
 )
 
 type User struct {
-	ID        uint32    `json:"id",gorm:"primary_key"`
-	Email     string    `json:"email"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Gender    string    `json:"gender"`
-	BirthDate time.Time `json:"birth_date"`
+	ID        uint32 `json:"id,omitempty",gorm:"primary_key"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Gender    string `json:"gender"`
+	BirthDate uint64 `json:"birth_date"`
 }
 
 type Location struct {
@@ -34,11 +33,11 @@ type Location struct {
 }
 
 type Visit struct {
-	ID        uint32    `json:"id",gorm:"primary_key"`
-	Location  uint32    `json:"location"`
-	User      uint32    `json:"user"`
-	VisitedAt time.Time `json:"visited_at"`
-	Mark      uint32    `json:"mark"`
+	ID        uint32 `json:"id",gorm:"primary_key"`
+	Location  uint32 `json:"location"`
+	User      uint32 `json:"user"`
+	VisitedAt uint64 `json:"visited_at"`
+	Mark      uint32 `json:"mark"`
 }
 
 type User_db struct {
@@ -67,20 +66,16 @@ func main() {
 	}
 	defer database.Close()
 	db = database
-	db.CreateTable(&User{})
+
 	if db.HasTable(&User{}) {
 		lg.Info("table 'user' has been added to db")
 	} else {
 		lg.Warning("db has table user")
 	}
-	db.CreateTable(&Location{})
-	db.CreateTable(&Visit{})
-	loc := time.FixedZone("UTC", 1*60*60)
-	t := time.Now().In(loc)
-	fmt.Println(t.Date() /*, " ", t.Hour(), ":", t.Minute(), ":", t.Second()*/)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/user/{id:[0-9]+}", switchUser).Methods("GET", "POST")
+	router.HandleFunc("/{entity}/new", addEntity).Methods("POST")
 	server := &http.Server{
 		Addr:         ":8090",
 		Handler:      router,
