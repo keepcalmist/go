@@ -81,15 +81,49 @@ func addEntity(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	//TODO
+	//Done
 	case "visit":
 		{
-
+			var visit Visit
+			err := json.NewDecoder(r.Body).Decode(&visit)
+			if err != nil {
+				w.WriteHeader(400)
+				lg.Warning(err, "incorrect data")
+			}
+			found := db.Find(&Visit{}, "id = ?", visit.ID).RecordNotFound()
+			if found == false {
+				lg.Warning("id ", visit.ID, "is already exist")
+				w.WriteHeader(400)
+				return
+			} else {
+				err := db.Create(&visit).GetErrors()
+				if err != nil {
+					lg.Warning(err)
+				}
+				return
+			}
 		}
-	//TODO
+	//Done
 	case "location":
 		{
-
+			var location Location
+			err := json.NewDecoder(r.Body).Decode(&location)
+			if err != nil {
+				w.WriteHeader(400)
+				lg.Warning(err, "incorrect data")
+			}
+			found := db.Find(&Location{}, "id = ?", location.ID).RecordNotFound()
+			if found == false {
+				lg.Warning("id ", location.ID, "is already exist")
+				w.WriteHeader(400)
+				return
+			} else {
+				err := db.Create(&location).GetErrors()
+				if err != nil {
+					lg.Warning(err)
+				}
+				return
+			}
 		}
 	}
 }
