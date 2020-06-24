@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -254,26 +255,68 @@ func addEntity(w http.ResponseWriter, r *http.Request) {
 
 //locations/id/avg
 func locationAverage(w http.ResponseWriter, r *http.Request) {
+
+	var queryParams = "id = ?"
+	var params []string
+	params = make([]string, 0, 5)
 	vars := mux.Vars(r)
-	fromDate, found := vars["fromDate"]
-	toDate, found := vars["toDate"]
-	fromAge, found := vars["fromAge"]
-	toAge, found := vars["toAge"]
-	gender, found := vars["gender"]
+	params = append(params, vars["id"])
 
-	var queryParams string 
+	query := r.URL.Query()
+	fromDate := query.Get("fromDate")
+	if len(fromDate) != 0 {
+		queryParams += " AND visit.visitedAt > ?"
+		params = append(params, fromDate)
+	}
 
+	toDate := query.Get("toDate")
+	if len(toDate) != 0 {
+		queryParams += " AND visit.visitedAt < ?"
+		params = append(params, toDate)
+	}
 
-	id := vars["id"]
-	var visits []Visit
-	db.Where("id = ?", id).Where("")
+	fromAge := query.Get("fromAge")
+	if len(fromAge) != 0 {
+		queryParams += " AND user.BirthDate > ?"
+		params = append(params, fromAge)
+	}
+
+	toAge := query.Get("toAge")
+	if len(toAge) != 0 {
+		queryParams += " AND user.BirthDate < ?"
+		params = append(params, toAge)
+	}
+
+	gender := query.Get("gender")
+	if len(gender) != 0 {
+		queryParams += " AND user.gender = ?"
+		params = append(params, gender)
+	}
+
+	rows, err := db.Table("visit").Joins("JOIN user ON visit.user = user.id").Where(queryParams, params).Select("visit.mark").Rows()
+	defer rows.Close()
+	if err != nil {
+		lg.Warning(err, " something wrong with query")
+		w.WriteHeader(404)
+		return
+	}
+	var mark, sum, i uint16
+	for rows.Next() {
+		rows.Scan(&mark)
+		sum += mark
+		i++
+	}
+	var avg float32
+	avg = float32(sum)
+	avg /= float32(i)
+	lg.Info(sum, avg)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(fmt.Sprintf("%.5f", avg)))
+	return
+}
 
 //users/id/visits?params...
 func visitsUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	fromDate, found := vars["fromDate"]
-	toDate, found := vars["toDate"]
-	country, found := vars["country"]
-	toDistance, found := vars["toDistance"]
-
+	_ = vars
 }
