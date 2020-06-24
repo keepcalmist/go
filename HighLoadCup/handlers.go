@@ -261,10 +261,12 @@ func locationAverage(w http.ResponseWriter, r *http.Request) {
 	toAge, found := vars["toAge"]
 	gender, found := vars["gender"]
 
-	id := vars["id"]
+	var queryParams string 
 
-	var users []User
-}
+
+	id := vars["id"]
+	var visits []Visit
+	db.Where("id = ?", id).Where("")
 
 //users/id/visits?params...
 func visitsUser(w http.ResponseWriter, r *http.Request) {
