@@ -25,7 +25,7 @@ type User struct {
 }
 
 type Location struct {
-	ID       uint32 `json:"id",gorm:"primary_key"`
+	ID       uint32 `json:"id,omitempty",gorm:"primary_key"`
 	Place    string `json:"place"`
 	Country  string `json:"country"`
 	City     string `json:"city"`
@@ -33,7 +33,7 @@ type Location struct {
 }
 
 type Visit struct {
-	ID        uint32 `json:"id",gorm:"primary_key"`
+	ID        uint32 `json:"id,omitempty",gorm:"primary_key"`
 	Location  uint32 `json:"location"`
 	User      uint32 `json:"user"`
 	VisitedAt uint64 `json:"visited_at"`
@@ -74,8 +74,10 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/user/{id:[0-9]+}", switchUser).Methods("GET", "POST")
+	router.HandleFunc("/{entity}/{id:[0-9]+}", switchUser).Methods("GET", "POST")
 	router.HandleFunc("/{entity}/new", addEntity).Methods("POST")
+	router.HandleFunc("locations/{id:[0-9]+}/avg", locationAverage).Methods("GET")
+	router.HandleFunc("users/{id:[0-9]+}/visits", visitsUser).Methods("GET")
 	server := &http.Server{
 		Addr:         ":8090",
 		Handler:      router,
