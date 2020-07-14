@@ -10,12 +10,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	mgo "gopkg.in/mgo.v2/bson"
 )
 
 func getUsers(r *http.Request) string {
-	fmt.Println("Kak dolzhno BbIt':", bson.M{"id": bson.M{`$ne`: ""}})
 	log.Println("r['request'] = ", r.Form["request"])
+	fmt.Println("validate data:", validate(r))
 	request := r.FormValue("request")
+
 	log.Println(request, len(request))
 	if len(request) == 0 {
 		return request
@@ -23,7 +25,7 @@ func getUsers(r *http.Request) string {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	fmt.Println("Context has been created")
-	ClientNONGO, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://kirill:KI990856u@cluster0.z1i9r.mongodb.net/<Cluster0>?retryWrites=true&w=majority"))
+	ClientNONGO, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,19 +35,27 @@ func getUsers(r *http.Request) string {
 		log.Fatal(err)
 	}
 
-	err = ClientNONGO.Ping(context.Background(), nil)
+	var val bson.M
+	var jsonmarshl interface{}
+	//query := `{"id":1}`
+	err = mgo.UnmarshalJSON([]byte(fmt.Sprint(`{"id": `, request, ` }`)), &jsonmarshl)
 	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Connected to mongo db")
-	localDB := ClientNONGO.Database("injection")
-	tasks := localDB.Collection("users")
-	cur, err := tasks.Find(ctx, `{"id":{$ne:0}}`) // Вместо второго аргумента получается инъекция bson.M{`$ne`: ""}
-	fmt.Println("bson structer:", bson.M{"id": request})
-	if err != nil {
-		log.Println("Injection hasnt been execute, filter:", bson.M{"id": request})
 		log.Println(err)
 	}
+	err = bson.Unmarshal([]byte(fmt.Sprint(`{"id": `, request, ` }`)), &val)
+	if err != nil {
+		log.Println(err)
+	}
+	localDB := ClientNONGO.Database("mydb")
+	tasks := localDB.Collection("users")
+	fmt.Println("bson filter: ", val, "   Should be: ", fmt.Sprint(`{"id": `, request, `}`))
+	cur, err := tasks.Find(ctx, jsonmarshl) // Вместо второго аргумента получается инъекция bson.M{`$ne`: ""}
+	if err != nil {
+		log.Println("Injection hasnt been execute, filter:", val)
+		log.Println(err)
+		return ""
+	}
+
 	fmt.Println("vse ok!!! posle zaprosa")
 	var results []*user
 
@@ -67,4 +77,5 @@ func getUsers(r *http.Request) string {
 	fmt.Println("vse ok!!! posle poiska")
 	fmt.Println(results)
 	return request
+
 }
