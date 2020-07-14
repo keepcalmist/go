@@ -1,7 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
 
-func validate(r http.Request) {
+	"github.com/asaskevich/govalidator"
+)
 
+func validate(r *http.Request) string {
+	return govalidator.WhiteList(r.FormValue("request"), "a-zA-Z0-9")
 }
