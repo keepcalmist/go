@@ -41,7 +41,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func requestPage(w http.ResponseWriter, r *http.Request) {
+func (connect *myDBAndOthers) requestPage(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr)
 	err := r.ParseForm()
 	if err != nil {
@@ -60,7 +60,7 @@ func requestPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 
 	fmt.Println("getusers..")
-	getUsers(r)
+	getUsers(r, connect)
 	// tmpl.Execute(w, data)
 
 }
